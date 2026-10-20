@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vibe Coding: البرمجة بأسلوب جديد</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme: light;
+  --navy:#13294b; --navy-2:#1d3a66; --ink:#1f2937; --muted:#5b6475;
+  --bg:#f3f5f9; --card:#ffffff; --line:#e3e8ef;
+  --accent:#0f7d7e; --accent-soft:#e3f3f2; --gold:#b8892b;
+  --ok:#1b7a4b; --ok-soft:#e5f4ec; --bad:#b03030; --bad-soft:#fbeaea;
+  --header-h:60px; --footer-h:72px;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:'IBM Plex Sans Arabic','Segoe UI',Tahoma,sans-serif;font-size:17px;line-height:1.85;-webkit-font-smoothing:antialiased}
+button{font:inherit;cursor:pointer}
+img{max-width:100%;height:auto}
+
+/* header */
+.top{position:sticky;top:0;z-index:30;height:var(--header-h);background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px;padding:0 16px}
+.icon-btn{width:40px;height:40px;border-radius:10px;border:1px solid var(--line);background:#fff;display:grid;place-items:center;color:var(--navy)}
+.icon-btn:hover{background:var(--bg)}
+.top-title{flex:1;min-width:0;font-weight:600;color:var(--navy);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:15px}
+.counter{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.bar{position:absolute;inset-inline:0;bottom:-1px;height:3px;background:transparent}
+.bar>i{display:block;height:100%;width:0;background:var(--accent);transition:width .35s ease;margin-inline-start:0}
+
+/* drawer */
+.scrim{position:fixed;inset:0;background:rgba(10,20,40,.4);z-index:40;opacity:0;pointer-events:none;transition:opacity .2s}
+.scrim.on{opacity:1;pointer-events:auto}
+.drawer{position:fixed;top:0;bottom:0;right:0;width:min(360px,88vw);background:#fff;z-index:50;transform:translateX(100%);transition:transform .25s ease;display:flex;flex-direction:column;box-shadow:-8px 0 30px rgba(0,0,0,.12)}
+.drawer.on{transform:none}
+.drawer-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--line);font-weight:700;color:var(--navy)}
+.drawer nav{overflow-y:auto;padding:8px 8px 24px}
+.drawer ol{list-style:none;margin:0;padding:0}
+.nav-lesson{margin-top:10px}
+.nav-lesson-title{display:flex;gap:10px;align-items:center;font-weight:700;color:var(--navy);padding:8px 10px;font-size:15px;line-height:1.5}
+.ln{flex:none;width:26px;height:26px;border-radius:8px;background:var(--navy);color:#fff;display:grid;place-items:center;font-size:13px}
+.nav-item{width:100%;display:flex;gap:10px;align-items:flex-start;text-align:right;background:none;border:0;border-radius:10px;padding:8px 10px;color:var(--ink);font-size:14.5px;line-height:1.6}
+.nav-item:hover{background:var(--bg)}
+.nav-item.cur{background:var(--accent-soft);color:var(--accent);font-weight:600}
+.nav-num{color:var(--muted);font-variant-numeric:tabular-nums;flex:none}
+.tick{flex:none;width:16px;height:16px;border-radius:50%;border:1.5px solid #c5cdd9;margin-top:4px}
+.nav-item.seen .tick{background:var(--accent);border-color:var(--accent);box-shadow:inset 0 0 0 3px #fff}
+
+/* screens */
+main{padding-bottom:calc(var(--footer-h) + 24px)}
+.hero{position:relative;overflow:hidden;color:#fff;background:#2c3340;min-height:240px;display:flex;align-items:center;justify-content:center;text-align:center;padding:48px 20px}
+.hero::before,.hero::after{content:"";position:absolute;inset:-40%;pointer-events:none}
+.hero::before{background:
+  linear-gradient(135deg,transparent 42%,rgba(255,255,255,.06) 42%,rgba(255,255,255,.06) 58%,transparent 58%),
+  linear-gradient(45deg,transparent 30%,rgba(0,0,0,.18) 30%,rgba(0,0,0,.18) 46%,transparent 46%);
+  background-size:220px 220px}
+.hero::after{background:radial-gradient(ellipse at 50% 120%,rgba(15,125,126,.35),transparent 60%)}
+.hero-cover{background:var(--navy);min-height:300px}
+.hero-in{position:relative;z-index:1;max-width:900px}
+.hero h1{margin:6px 0 0;font-size:clamp(28px,5.4vw,52px);line-height:1.3;font-weight:700;text-wrap:balance}
+.eyebrow{font-size:14px;opacity:.82;letter-spacing:.2px}
+.by{margin-top:14px;opacity:.85;font-size:15px}
+.banner{background:#150c29;display:flex;justify-content:center}
+.banner img{display:block;width:100%;max-width:1180px;height:auto;max-height:62vh;object-fit:contain}
+.end-logo{display:block;width:100%;max-width:420px;border-radius:14px;margin:26px auto 10px}
+.done-h{color:var(--navy);font-size:clamp(24px,4vw,34px);margin:4px 0 10px}
+.done-badge{color:#fff;width:76px;height:76px;border-radius:50%;background:var(--accent);display:grid;place-items:center;margin:0 auto 10px}
+
+.content{max-width:920px;margin:0 auto;padding:32px 16px 0}
+.content.center{text-align:center}
+.content p{margin:0 0 14px}
+.lead{font-size:18.5px;color:var(--ink)}
+.sec-h{font-size:20px;color:var(--navy);margin:28px 0 10px}
+.obj{margin:0;padding-inline-start:22px}
+.obj li{margin:6px 0}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{background:var(--accent-soft);color:var(--accent);border-radius:999px;padding:4px 14px;font-size:14.5px;font-weight:500}
+.start-row{margin:34px 0 10px;display:flex;justify-content:center}
+
+/* original content blocks */
+.pdf-text-block{margin:0 0 18px}
+.pdf-text-block font,.pdf-text-block span{font-size:inherit!important}
+.content h4{font-size:19px;color:var(--navy);margin:18px 0 8px}
+.figure{margin:8px 0 22px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px}
+.figure img{display:block;border-radius:8px;width:auto;max-width:100%;max-height:80vh;margin:0 auto}
+.figure figcaption{font-size:13px;color:var(--muted);margin-top:6px}
+.video-wrap{margin:0 0 24px;border-radius:14px;overflow:hidden;background:#000;box-shadow:0 6px 24px rgba(19,41,75,.15)}
+.vid{display:block;width:100%;height:auto}
+
+.cb-listing-cards{display:grid;gap:12px;margin:6px 0 20px}
+.cb-listing-card{display:flex;background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.cb-listing-card-left-bar{width:5px;flex:none;background:var(--accent)}
+.cb-listing-card:nth-child(3n+2) .cb-listing-card-left-bar{background:var(--navy-2)}
+.cb-listing-card:nth-child(3n+3) .cb-listing-card-left-bar{background:var(--gold)}
+.cb-listing-card-body{padding:14px 18px}
+.cb-listing-card-title{font-weight:700;color:var(--navy);margin-bottom:4px}
+.cb-listing-card-text p{margin:0}
+
+.cb-summary-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:10px 0 22px}
+.cb-summary-card{background:#fff;border:1px solid var(--line);border-top:4px solid var(--accent);border-radius:12px;padding:16px;text-align:center}
+.cb-summary-card-title{font-weight:700;color:var(--navy);margin-bottom:6px}
+.cb-summary-card-content{color:var(--muted);font-size:16px}
+.cb-summary-card-content h4{display:none}
+
+.pdf-rubric-standalone{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin:10px 0 22px}
+.pdf-assignment-header{display:none}
+.pdf-assignment-rubric h4:first-child{margin-top:0}
+
+.cb-generic-section{background:var(--accent-soft);border-radius:14px;padding:18px 20px;margin:0 0 20px;font-weight:500}
+.cb-generic-section p{margin:0}
+
+.pdf-html-block{margin:6px 0 22px;overflow-x:auto}
+.pdf-html-block table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden;font-size:16px}
+.pdf-html-block thead th{background:var(--navy);color:#fff;font-weight:600}
+.pdf-html-block div[style*="font-family"]{font-family:inherit!important}
+
+.acc{background:#fff;border:1px solid var(--line);border-inline-start:4px solid var(--accent);border-radius:12px;margin:0 0 12px;overflow:hidden}
+.acc summary{list-style:none;padding:14px 18px;font-weight:700;color:var(--navy);display:flex;justify-content:space-between;align-items:center;gap:10px;cursor:pointer}
+.acc summary::-webkit-details-marker{display:none}
+.acc summary::after{content:"";width:9px;height:9px;border-inline-start:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(-45deg);transition:transform .2s;flex:none}
+.acc[open] summary::after{transform:rotate(135deg)}
+.acc-body{padding:0 18px 16px;font-size:16.5px}
+.acc-body p{margin:0 0 6px}
+.acc-body a{color:var(--navy-2);word-break:break-all}
+.acc-body ul{padding-inline-start:20px;margin:0}
+
+/* references */
+.refs{list-style:none;margin:10px 0 20px;padding:0;display:grid;gap:12px}
+.ref{display:flex;gap:14px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 18px;text-decoration:none;color:var(--ink);transition:border-color .15s,box-shadow .15s}
+.ref:hover{border-color:var(--accent);box-shadow:0 4px 16px rgba(15,125,126,.12)}
+.ref-ico{flex:none;width:40px;height:40px;border-radius:10px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center}
+.ref-txt{display:flex;flex-direction:column;min-width:0}
+.ref-t{font-weight:700;color:var(--navy)}
+.ref-s{font-size:14px;color:var(--muted)}
+
+/* video gate */
+.gate-note{display:flex;gap:10px;align-items:center;background:#fff7e6;border:1px solid #f0d9a8;color:#7a5a12;border-radius:12px;padding:10px 14px;margin:0 0 14px;font-size:15px}
+.gate-note.ok{background:var(--ok-soft);border-color:#b7dcc6;color:var(--ok)}
+.nav-item.locked{opacity:.45;cursor:not-allowed}
+.nav-item.locked .tick{border-style:dashed}
+
+/* flip cards */
+.flips{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;margin:8px 0 22px}
+.flip{border:0;padding:0;background:none;perspective:1000px;min-height:230px;text-align:center}
+.flip-inner{position:relative;display:block;width:100%;height:100%;min-height:230px;transition:transform .5s;transform-style:preserve-3d}
+.flip[aria-pressed="true"] .flip-inner{transform:rotateY(180deg)}
+.flip-face{position:absolute;inset:0;border-radius:14px;padding:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.flip-a{background:var(--navy);color:#fff}
+.flip-b{background:#fff;border:1px solid var(--line);color:var(--ink);transform:rotateY(180deg)}
+.flip-num{font-size:30px;font-weight:700;color:#7fd3cf}
+.flip-head{font-weight:700;font-size:18px;line-height:1.5}
+.flip-b .flip-head{color:var(--accent)}
+.flip-body{font-size:15.5px;line-height:1.75}
+.flip-hint{font-size:13px;opacity:.7}
+
+/* quiz */
+.quiz{margin:4px 0 20px}
+.q{border:1px solid var(--line);background:#fff;border-radius:14px;padding:16px 18px;margin:0 0 14px}
+.q legend{font-weight:700;color:var(--navy);padding:0 6px;display:flex;gap:10px;align-items:flex-start;line-height:1.6;float:right;width:100%;margin-bottom:10px}
+.qn{flex:none;width:26px;height:26px;border-radius:8px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;font-size:14px;margin-top:2px}
+.opt{display:flex;gap:10px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:9px 12px;margin:0 0 8px;cursor:pointer;clear:both;transition:background .15s,border-color .15s}
+.opt:hover{background:var(--bg)}
+.opt input{accent-color:var(--accent);width:18px;height:18px;flex:none}
+.opt.is-ok{background:var(--ok-soft);border-color:var(--ok)}
+.opt.is-bad{background:var(--bad-soft);border-color:var(--bad)}
+.quiz-actions{display:flex;gap:10px;flex-wrap:wrap}
+.quiz-result{margin-top:14px;font-weight:700;font-size:18px;color:var(--navy)}
+
+/* buttons + footer */
+.btn{border-radius:12px;padding:10px 22px;border:1px solid transparent;font-weight:600;display:inline-flex;align-items:center;gap:8px}
+.btn.primary{background:var(--navy);color:#fff}
+.btn.primary:hover{background:var(--navy-2)}
+.btn.ghost{background:#fff;color:var(--navy);border-color:var(--line)}
+.btn.ghost:hover{background:var(--bg)}
+.btn.big{padding:14px 40px;font-size:18px}
+.btn:disabled{opacity:.4;cursor:default}
+.foot{position:fixed;bottom:0;inset-inline:0;z-index:20;height:var(--footer-h);background:#fff;border-top:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 16px;gap:10px}
+.foot .where{font-size:13.5px;color:var(--muted);text-align:center;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+:focus-visible{outline:3px solid #7fd3cf;outline-offset:2px}
+h1[tabindex]:focus,h1[tabindex]:focus-visible{outline:none}
+
+@media (max-width:600px){
+  body{font-size:16px}
+  .hero{min-height:190px;padding:36px 16px}
+  .content{padding-top:24px}
+  .foot .where{display:none}
+  .btn{padding:10px 16px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+.pdf-text-block h4,.cb-generic-section h4{font-size:19px;color:var(--navy);margin:16px 0 8px}
+.pdf-text-block h4:first-child,.cb-generic-section h4:first-child{margin-top:0}
+.pdf-text-block ul,.pdf-text-block ol,.cb-generic-section ul{padding-inline-start:22px;margin:0 0 14px}
+.pdf-text-block li p,.cb-generic-section li p{margin:0 0 6px}
+.cb-generic-section p{margin:0 0 8px}
+.cb-generic-section p:last-child{margin-bottom:0}
+.cb-listing-card-title p{margin:0}
+.rule{background:var(--navy);color:#fff;border-radius:14px;padding:18px 20px;margin:0 0 20px}
+.rule h4{color:#7fd3cf!important;margin:0 0 6px!important}
+.rule p{margin:0}
+.chooser{display:grid;gap:8px;margin:6px 0 18px}
+.chooser-row{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 14px}
+.chooser-row .need{color:var(--ink)}
+.chooser-row .arrow{color:var(--accent);font-weight:700}
+.chooser-row .tool{font-weight:700;color:var(--navy);direction:ltr;text-align:left}
+.chooser-row .tool.ar{direction:rtl;text-align:right}
+.loop{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:6px 0 14px}
+.loop span{background:#fff;border:1px solid var(--line);border-radius:999px;padding:3px 12px;font-weight:600;color:var(--navy);font-size:15px}
+.loop i{font-style:normal;color:var(--accent)}
+.prompt-box{background:#0f1a2e;color:#e6edf6;border-radius:12px;padding:14px 16px;margin:8px 0 6px;font-size:15.5px;line-height:1.9}
+.prompt-box p{margin:0 0 4px}
+.fp{display:block;margin:0 0 4px}
+.check-note{margin-top:10px;font-weight:600}
+.flip-num{font-size:26px}
+@media (max-width:600px){.chooser-row{grid-template-columns:1fr;gap:2px}.chooser-row .arrow{display:none}.chooser-row .tool{text-align:right}}
+</style>
+</head>
+<body>
+<header class="top">
+  <button class="icon-btn" id="menuBtn" type="button" aria-label="قائمة الدروس" aria-controls="drawer" aria-expanded="false">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+  </button>
+  <div class="top-title">Vibe Coding: البرمجة بأسلوب جديد</div>
+  <div class="counter" id="counter"></div>
+  <div class="bar"><i id="bar"></i></div>
+</header>
+
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" aria-label="محتويات الدورة">
+  <div class="drawer-head"><span>محتويات الدورة</span>
+    <button class="icon-btn" id="closeBtn" type="button" aria-label="إغلاق"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+  </div>
+  <nav><ol>
+    <li><button type="button" class="nav-item" data-go="0"><span class="tick" aria-hidden="true"></span><span>مقدمة الدورة</span></button></li><li class="nav-lesson"><div class="nav-lesson-title"><span class="ln">1</span>المقدمة</div><ol><li><button type="button" class="nav-item" data-go="1"><span class="tick" aria-hidden="true"></span><span class="nav-num">1.1.</span><span>تمهيد إلى الدورة</span></button></li></ol></li><li class="nav-lesson"><div class="nav-lesson-title"><span class="ln">2</span>مدخل إلى Vibe Coding</div><ol><li><button type="button" class="nav-item" data-go="2"><span class="tick" aria-hidden="true"></span><span class="nav-num">2.1.</span><span>ما هو Vibe Coding؟</span></button></li><li><button type="button" class="nav-item" data-go="3"><span class="tick" aria-hidden="true"></span><span class="nav-num">2.2.</span><span>حلقة العمل التفاعلية</span></button></li><li><button type="button" class="nav-item" data-go="4"><span class="tick" aria-hidden="true"></span><span class="nav-num">2.3.</span><span>اختبار الوحدة الثانية</span></button></li></ol></li><li class="nav-lesson"><div class="nav-lesson-title"><span class="ln">3</span>المبادئ الخمسة</div><ol><li><button type="button" class="nav-item" data-go="5"><span class="tick" aria-hidden="true"></span><span class="nav-num">3.1.</span><span>الخطوات الأولى في Vibe Coding</span></button></li><li><button type="button" class="nav-item" data-go="6"><span class="tick" aria-hidden="true"></span><span class="nav-num">3.2.</span><span>أدوات ذكاء اصطناعي مساندة لـ Vibe Coding</span></button></li><li><button type="button" class="nav-item" data-go="7"><span class="tick" aria-hidden="true"></span><span class="nav-num">3.3.</span><span>كيف تختار الأداة المناسبة؟</span></button></li></ol></li><li class="nav-lesson"><div class="nav-lesson-title"><span class="ln">4</span>كتابة تعليمات فعالة</div><ol><li><button type="button" class="nav-item" data-go="8"><span class="tick" aria-hidden="true"></span><span class="nav-num">4.1.</span><span>أُسس التعليمات الفعّالة</span></button></li><li><button type="button" class="nav-item" data-go="9"><span class="tick" aria-hidden="true"></span><span class="nav-num">4.2.</span><span>اختبار الوحدة الرابعة</span></button></li></ol></li><li class="nav-lesson"><div class="nav-lesson-title"><span class="ln">5</span>المعرفة المطلوبة والمراجعة</div><ol><li><button type="button" class="nav-item" data-go="10"><span class="tick" aria-hidden="true"></span><span class="nav-num">5.1.</span><span>لماذا ما زالت البرمجة مهمة؟</span></button></li><li><button type="button" class="nav-item" data-go="11"><span class="tick" aria-hidden="true"></span><span class="nav-num">5.2.</span><span>ما الذي يجب مراجعته؟</span></button></li><li><button type="button" class="nav-item" data-go="12"><span class="tick" aria-hidden="true"></span><span class="nav-num">5.3.</span><span>اختبار الوحدة الخامسة</span></button></li></ol></li><li class="nav-lesson"><div class="nav-lesson-title"><span class="ln">6</span>الملخص</div><ol><li><button type="button" class="nav-item" data-go="13"><span class="tick" aria-hidden="true"></span><span class="nav-num">6.1.</span><span>النقاط الأساسية</span></button></li><li><button type="button" class="nav-item" data-go="14"><span class="tick" aria-hidden="true"></span><span class="nav-num">6.2.</span><span>مشروع تطبيقي</span></button></li><li><button type="button" class="nav-item" data-go="15"><span class="tick" aria-hidden="true"></span><span class="nav-num">6.3.</span><span>المراجع</span></button></li></ol></li>
+  </ol></nav>
+</aside>
+
+<main id="main">
+<section class="screen" data-i="0">
+  <div class="banner"><img src="cover.jpg" alt="Vibe Coding: البرمجة بأسلوب جديد — دورة تدريبية في البرمجة بمساعدة الذكاء الاصطناعي، عمادة التعلم الإلكتروني وتقنية المعلومات بجامعة القصيم"></div>
+  <div class="content">
+    <p class="lead">تعرّف هذه الدورة نمط Vibe Coding وكيفية الانتقال من الفكرة إلى التطبيق بمساعدة الذكاء الاصطناعي عبر بناء تدريجي واختبار مستمر وتحسين متكرر، كما تساعدك على كتابة تعليمات فعالة ومراجعة المخرجات بوعي تقني يضمن جودة النتيجة.</p>
+    <h2 class="sec-h">أهداف الدورة</h2>
+    <ul class="obj"><li>شرح مفهوم Vibe Coding وتمييزه عن أسلوب كتابة التعليمات البرمجية التقليدي.</li><li>تطبيق المبادئ الخمسة لـ Vibe Coding على فكرة تطبيق بسيطة.</li><li>صياغة تعليمات واضحة ومحددة توجّه الذكاء الاصطناعي نحو نتيجة مناسبة.</li><li>التعرّف على أدوات الذكاء الاصطناعي المساندة في Vibe Coding واختيار الأنسب منها لكل مرحلة.</li><li>تقييم مخرجات الذكاء الاصطناعي واكتشاف ما يحتاج إلى تعديل أو اختبار.</li><li>تحديد المعارف البرمجية الأساسية التي تعزز استخدام Vibe Coding بفعالية.</li><li>تحويل فكرة أولية إلى تطبيق قابل للتشغيل باستخدام أدوات الذكاء الاصطناعي.</li></ul>
+    <h2 class="sec-h">المهارات والمعارف</h2>
+    <div class="chips"><span class="chip">Vibe Coding</span><span class="chip">البرمجة بالذكاء الاصطناعي</span><span class="chip">صياغة التعليمات</span><span class="chip">اختبار التطبيقات</span><span class="chip">التحسين التدريجي</span><span class="chip">مراجعة الكود</span></div>
+    <div class="start-row"><button class="btn primary big" type="button" data-go="1">ابدأ الدورة</button></div>
+  </div>
+</section>
+<section class="screen" data-i="1" hidden>
+  <div class="hero"><div class="hero-in">
+    <div class="eyebrow">الوحدة 1 · المقدمة</div>
+    <h1>تمهيد إلى الدورة</h1>
+  </div></div>
+  <div class="content"><div class="pdf-text-block"><p>أهلاً بك في دورة <b>Vibe Coding</b>:</p><p>وهي نمط برمجي حديث يعتمد على الانتقال بالأنظمة والتطبيقات من مرحلة الفكرة إلى التطبيق العملي خطوة بخطوة بمساعدة الذكاء الاصطناعي، وذلك من خلال البناء التدريجي، والاختبار المستمر، والتحسين المتكرر؛ فالمسألة لا تقتصر على مجرد كتابة الكود البرمجي فحسب.</p><p>سنفهم معاً مفهوم <b>Vibe Coding</b> ونميزه عن الطرق البرمجية التقليدية. بعد ذلك، ستتدرب على صياغة توجيهات (Prompts) واضحة ودقيقة للذكاء الاصطناعي لضمان الحصول على مخرجات مناسبة، مع تعلم كيفية مراجعة هذه المخرجات بوعي تقني لتحديد ما يحتاج إلى تعديل أو اختبار. وفي النهاية، ستكتسب أهم المعارف البرمجية التي تمكنك من استخدام هذا الأسلوب بفعالية واستخراج نتائج قوية وموثوقة.</p></div><div class="pdf-text-block"><h4>ماذا ستتعلم في هذه الدورة</h4></div><div class="cb-listing-cards"><div class="cb-listing-card"><div class="cb-listing-card-left-bar"></div><div class="cb-listing-card-body"><div class="cb-listing-card-title">فهم Vibe Coding</div><div class="cb-listing-card-text"><p>ستستوعب فكرة <b>Vibe Coding</b>، وكيف تُوجّه الذكاء الاصطناعي للتركيز على تحقيق الهدف مباشرة، بدلاً من البدء بكتابة سطور برمجية عشوائية.</p></div></div></div><div class="cb-listing-card"><div class="cb-listing-card-left-bar"></div><div class="cb-listing-card-body"><div class="cb-listing-card-title">تطبيق المبادئ الخمسة</div><div class="cb-listing-card-text"><p>ستوظّف المبادئ الخمسة ضمن مسار بناء تدريجي، وتتعلم كيفية الحدّ من التشتت وضبط الجودة منذ البداية.</p></div></div></div><div class="cb-listing-card"><div class="cb-listing-card-left-bar"></div><div class="cb-listing-card-body"><div class="cb-listing-card-title">تعليمات فعالة</div><div class="cb-listing-card-text"><p>ستتعلم كيفية صياغة تعليمات واضحة وشاملة تتضمن تحديد الهدف، والجمهور المستهدف، والقيود التقنية، ومعايير النجاح؛ لضمان حصولك على مخرجات أكثر دقة وجودة من الذكاء الاصطناعي.</p></div></div></div><div class="cb-listing-card"><div class="cb-listing-card-left-bar"></div><div class="cb-listing-card-body"><div class="cb-listing-card-title">المعرفة المطلوبة والمراجعة</div><div class="cb-listing-card-text"><p>ستراجع مخرجات الذكاء الاصطناعي بوعي تقني لتحديد ما يحتاج إلى تعديل واختبار، وتستند إلى أهم المعارف البرمجية التي تضمن لك التحكم الكامل بجودة المخرجات.</p></div></div></div></div></div>
+</section>
+<section class="screen" data-i="2" data-gate="video" hidden>
+  <div class="hero"><div class="hero-in">
+    <div class="eyebrow">الوحدة 2 · مدخل إلى Vibe Coding</div>
+    <h1>ما هو Vibe Coding؟</h1>
+  </div></div>
+  <div class="content"><div class="pdf-text-block"><p>يُعدّ <b>Vibe Coding</b> أسلوباً حديثاً في تطوير البرمجيات ينطلق من تحديد الهدف والنتيجة المرجوّة قبل البدء بكتابة السطور البرمجية.</p><p>وتكمن أهمية هذا الأسلوب في التحول من السؤال التقليدي: "كيف أكتب هذا الكود؟" إلى التفكير المباشر في احتياج التطبيق نفسه: "ماذا أريد من التطبيق أن يقدّم؟ ولمن؟ وما النتيجة النهائية التي أسعى للوصول إليها؟".</p><p>يغيّر هذا المفهوم طريقة التفكير البرمجي؛ لتنتقل من كتابة الشفرات/التعليمات يدوياً سطرًا بسطر، إلى توجيه الذكاء الاصطناعي بدقة، ثم مراجعة النتائج وتحسينها تدريجياً.</p></div><div class="video-wrap"><video class="vid" controls playsinline preload="metadata" poster="intro-poster.jpg"><source src="intro.mp4" type="video/mp4"></video></div><div class="flips"><button class="flip" type="button" aria-pressed="false"><span class="flip-inner"><span class="flip-face flip-a"><span class="flip-num">أولاً</span><span class="flip-head">البداية</span><span class="flip-hint">اضغط للكشف</span></span><span class="flip-face flip-b"><span class="flip-head">البداية</span><span class="flip-body"><span class="fp">تبدأ بـ <strong>وصف ما تريد</strong> أن يفعله التطبيق، وليس بكتابة الكود مباشرة.</span></span></span></span></button><button class="flip" type="button" aria-pressed="false"><span class="flip-inner"><span class="flip-face flip-a"><span class="flip-num">ثانياً</span><span class="flip-head">سؤال مهم</span><span class="flip-hint">اضغط للكشف</span></span><span class="flip-face flip-b"><span class="flip-head">سؤال مهم</span><span class="flip-body"><span class="fp">بدلًا من التفكير: "كيف أكتب الكود؟"</span><span class="fp">فكّر: ماذا أريد من التطبيق أن يفعل؟ ولمن؟ وما النتيجة المطلوبة؟</span></span></span></span></button><button class="flip" type="button" aria-pressed="false"><span class="flip-inner"><span class="flip-face flip-a"><span class="flip-num">ثالثاً</span><span class="flip-head">دور الذكاء الاصطناعي</span><span class="flip-hint">اضغط للكشف</span></span><span class="flip-face flip-b"><span class="flip-head">دور الذكاء الاصطناعي</span><span class="flip-body"><span class="fp">الذكاء الاصطناعي يساعدك في <strong>تحويل الوصف إلى تطبيق عملي</strong> ثم تطويره.</span></span></span></span></button><button class="flip" type="button" aria-pressed="false"><span class="flip-inner"><span class="flip-face flip-a"><span class="flip-num">رابعاً</span><span class="flip-head">دورة العمل</span><span class="flip-hint">اضغط للكشف</span></span><span class="flip-face flip-b"><span class="flip-head">دورة العمل</span><span class="flip-body"><span class="fp">صياغة الفكرة ← بناء النسخة الأولى ← التجربة والتنفيذ ← المراجعة والتحليل ← التحسين والتعديل ← التكرار</span></span></span></span></button></div><div class="pdf-text-block"><p>يغيّر <b>Vibe Coding</b> نقطة الانطلاق في تطوير التطبيقات؛ فبدل أن يبدأ السؤال من «كيف أكتب الكود؟»، يصبح من «ما الذي أريد من التطبيق أن يحققه؟».</p><p>كلما كان وصفك للهدف والوظائف المطلوبة أكثر وضوحًا ودقة، أصبح بإمكانك توجيه أدوات الذكاء الاصطناعي بصورة أكثر فاعلية، كما تصبح مراجعة النتائج وتحسينها عملية أكثر سهولة وتنظيمًا.</p><p>وهنا تكمن القيمة الحقيقية لـ <b>Vibe Coding</b>: فهو لا ينظر إلى البرمجة بوصفها مهمة تنتهي بكتابة الكود، بل باعتبارها عملية متكاملة من التصور، والبناء، والاختبار، والمراجعة، والتحسين المستمر.</p></div><div class="pdf-text-block" style="margin-top:6px"><h4>تحقّق من فهمك</h4></div><div class="quiz" data-pass="1"><fieldset class="q" data-correct="2"><legend><span class="qn">1</span>أي عبارة تعبّر بشكل أدق عن Vibe Coding؟</legend><label class="opt"><input type="radio" name="q0" value="0"><span>أبدأ بكتابة كل سطر من الكود قبل أن أحدد الهدف.</span></label><label class="opt"><input type="radio" name="q0" value="1"><span>أتعامل مع الذكاء الاصطناعي كبديل كامل عن الفهم أو المراجعة.</span></label><label class="opt"><input type="radio" name="q0" value="2"><span>أبدأ بوصف ما أريد أن يفعله التطبيق، ثم أستخدم الذكاء الاصطناعي للمساعدة في البناء والتحسين.</span></label><label class="opt"><input type="radio" name="q0" value="3"><span>أكتفي بنسخة أولية ولا أحتاج إلى اختبار أو تحسين.</span></label></fieldset><div class="quiz-actions"><button class="btn primary q-check" type="button">تحقق من إجابتي</button><button class="btn ghost q-reset" type="button" hidden>أعد المحاولة</button></div><div class="quiz-result" role="status"></div></div></div>
+</section>
+<section class="screen" data-i="3" hidden>
+  <div class="hero"><div class="hero-in">
+    <div class="eyebrow">الوحدة 2 · مدخل إلى Vibe Coding</div>
+    <h1>حلقة العمل التفاعلية</h1>
+  </div></div>
+  <div class="content"><div class="pdf-text-block"><h4>من الوصف إلى التطبيق</h4> <p>نركز في هذا الجزء على أسلوب التطوير التكراري في <b>Vibe Coding</b>: كيف تنتقل من وصف الفكرة إلى بناء النسخة الأولى، ثم اختبارها ومراجعتها وتطويرها. الفكرة الأساسية هنا هي أن بناء التطبيقات لا يتم دفعة واحدة؛ بل عبر عملية تكرارية متتابعة تُكسبك خبرة مع كل دورة تطوير.</p><h4>لماذا يُعدّ هذا الأمر مهماً؟ </h4><p>عند استخدامك للذكاء الاصطناعي، لا ينتهي دورك عند إعطاء أمر "اكتب/صمم لي التطبيق"، بل إنك تتولى قيادة المسار بأكمله؛ فتحدد الهدف، وتقيم الناتج، وتقدم الملاحظات، ثم تعيد التوجيه مجدداً حتى تصل بالنتيجة إلى الشكل المطلوب تماماً.</p></div><div class="cb-generic-section"><h4>مثال مبسّط</h4> <p>تخيل أنك تريد بناء تطبيق بسيط لتتبع المهام:</p><p>بدلاً من الخوض في التفاصيل البرمجية منذ اللحظة الأولى، ابدأ بتحديد الهدف أولاً، ثم ابْنِ نسخة أولية. بعد ذلك، اختبر العمليات الأساسية؛ مثل: إضافة مهمة، حذفها، أو طريقة عرضها، للتحقق مما إذا كانت تعمل بالشكل المتوقع.</p><p>وإذا لاحظت وجود سلوك غير مضبوط، قدّم ملاحظاتك وأعِد التوجيه والتحسين حتى تصل إلى النتيجة المطلوبة.</p></div><details class="acc"><summary>دور الإنسان</summary><div class="acc-body"><p>أنت من يحدد الهدف ويقرر ما إذا كانت النتيجة مناسبة أم تحتاج إلى تعديل؛ فوجودك محوري لقيادة المسار وضمان عدم انحراف العمل عن الغرض المطلوب.</p></div></details><details class="acc"><summary>دور الذكاء الاصطناعي</summary><div class="acc-body"><p>الذكاء الاصطناعي شريك تنفيذي يساعدك في تحويل الوصف إلى تطبيق عملي، ويستجيب للملاحظات لإعادة البناء والتطوير؛ فهو أداة مساعدة قوية، لكنه لا يُعد بديلاً عن التوجيه والإشراف البشري.</p></div></details><details class="acc"><summary>طبيعة العملية</summary><div class="acc-body"><p>تتكون حلقة العمل من دورة متكاملة: وصف، بناء، تجربة، مراجعة، تقديم ملاحظات، تحسين، ثم تكرار. وهذا يعني أن جودة المنتج لا تظهر من المحاولة الأولى فحسب، بل تنضج وتتطور مع كل دورة جديدة.</p></div></details><div class="pdf-text-block" style="margin-top:6px"><h4>تحقّق من فهمك</h4></div><div class="quiz" data-pass="1"><fieldset class="q" data-correct="1"><legend><span class="qn">1</span>أي ترتيب يعبّر بشكل أدق عن حلقة العمل في Vibe Coding؟</legend><label class="opt"><input type="radio" name="q1" value="0"><span>تجربها ← تصف الفكرة ← تحسنها</span></label><label class="opt"><input type="radio" name="q1" value="1"><span>تصف الفكرة ← تبني نسخة أولى ← تجربها ← تراجع النتيجة ← تقدّم ملاحظات ← تحسنها ← تكرر العملية</span></label><label class="opt"><input type="radio" name="q1" value="2"><span>تصف الفكرة ← تنهي التطبيق من أول مرة بدون مراجعة</span></label><label class="opt"><input type="radio" name="q1" value="3"><span>تحسنها ← تبني نسخة أولى ← تصف الفكرة</span></label></fieldset><div class="quiz-actions"><button class="btn primary q-check" type="button">تحقق من إجابتي</button><button class="btn ghost q-reset" type="button" hidden>أعد المحاولة</button></div><div class="quiz-result" role="status"></div></div></div>
+</section>
+<section class="screen" data-i="4" data-gate="quiz" hidden>
+  <div class="hero"><div class="hero-in">
+    <div class="eyebrow">الوحدة 2 · مدخل إلى Vibe Coding</div>
+    <h1>اختبار الوحدة الثانية</h1>
+  </div></div>
+  <div class="content"><div class="quiz" data-pass="3"><fieldset class="q" data-correct="2"><legend><span class="qn">1</span>ما الفائدة الأساسية من مفهوم Vibe Coding مقارنةً بالبرمجة التقليدية؟</legend><label class="opt"><input type="radio" name="q3" value="0"><span>يعتمد فقط على الذكاء الاصطناعي دون أي تدخل بشري</span></label><label class="opt"><input type="radio" name="q3" value="1"><span>يلغي بالكامل الحاجة إلى كتابة الكود يدويًا</span></label><label class="opt"><input type="radio" name="q3" value="2"><span>يسمح بتفاعل أكثر إبداعًا وسرعة في تطوير التطبيقات</span></label><label class="opt"><input type="radio" name="q3" value="3"><span>يستخدم لغات برمجة جديدة غير معروفة</span></label></fieldset><fieldset class="q" data-correct="0"><legend><span class="qn">2</span>أي من النقاط التالية لا تمثل فرقًا بين Vibe Coding والبرمجة التقليدية؟</legend><label class="opt"><input type="radio" name="q4" value="0"><span>الاعتماد الكامل على الخوارزميات التقليدية</span></label><label class="opt"><input type="radio" name="q4" value="1"><span>توفير الوقت في تطوير البرامج</span></label><label class="opt"><input type="radio" name="q4" value="2"><span>تسهيل التعاون بين الفرق البرمجية</span></label><label class="opt"><input type="radio" name="q4" value="3"><span>تطبيق التفكير الإبداعي في البرمجة</span></label></fieldset><fieldset class="q" data-correct="1"><legend><span class="qn">3</span>ما الدور الأساسي للذكاء الاصطناعي في عملية Vibe Coding؟</legend><label class="opt"><input type="radio" name="q5" value="0"><span>كتابة الكود بشكل كامل دون تدخل بشري</span></label><label class="opt"><input type="radio" name="q5" value="1"><span>تحويل الوصف إلى تطبيق عملي وتحسين النتائج بناءً على ملاحظات المستخدم</span></label><label class="opt"><input type="radio" name="q5" value="2"><span>اختيار الأدوات البرمجية المناسبة للمشروع نيابةً عن المطوّر</span></label><label class="opt"><input type="radio" name="q5" value="3"><span>تحديد الجمهور المستهدف للتطبيق</span></label></fieldset><fieldset class="q" data-correct="1"><legend><span class="qn">4</span>كيف يمكن للمتعلم تحسين جودة المخرجات في Vibe Coding؟</legend><label class="opt"><input type="radio" name="q6" value="0"><span>بإعطاء تعليمات عامة وغير محددة</span></label><label class="opt"><input type="radio" name="q6" value="1"><span>بفهم الأساسيات البرمجية وتوجيه الذكاء الاصطناعي بوضوح</span></label><label class="opt"><input type="radio" name="q6" value="2"><span>بكتابة الكود يدويًا دون استخدام الذكاء الاصطناعي</span></label><label class="opt"><input type="radio" name="q6" value="3"><span>بتجاهل مراجعة النتائج والاكتفاء بالمخرجات الأولية</span></label></fieldset><div class="quiz-actions"><button class="btn primary q-check" type="button">تحقق من إجاباتي</button><button class="btn ghost q-reset" type="button" hidden>أعد المحاولة</button></div><div class="quiz-result" role="status"></div></div></div>
+</section>
+<section class="screen" data-i="5" hidden>
+  <div class="hero"><div class="hero-in">
+    <div class="eyebrow">الوحدة 3 · المبادئ الخمسة</div>
+    <h1>الخطوات الأولى في Vibe Coding</h1>
+  </div></div>
+  <div class="content"><div class="cb-listing-cards"><div class="cb-listing-card"><div class="cb-listing-card-left-bar"></div><div class="cb-listing-card-body"><div class="cb-listing-card-title">تحديد الهدف</div><div class="cb-listing-card-text"><p>المرحلة الأولى والأساسية التي تتطلب صياغة النتيجة المرجوّة بوضوح، وتحديد الجمهور المستهدف بدقة لضبط اتجاه المشروع بالكامل قبل البدء في أي خطوات تنفيذية.</p></div></div></div><div class="cb-listing-card"><div class="cb-listing-card-left-bar"></div><div class="cb-listing-card-body"><div class="cb-listing-card-title">البناء التدريجي</div><div class="cb-listing-card-text"><p>يقتضي هذا المبدأ تقسيم العمل إلى مراحل جزئية صغيرة بدلاً من محاولة إنجاز المنتج النهائي دفعة واحدة؛ إذ تمنحك كل نسخة مصغرة فرصة حقيقية للتحقق من صحة المسار وتقويمه أولاً بأول.</p></div></div></div><div class="cb-listing-card"><div class="cb-listing-card-left-bar"></div><div class="cb-listing-card-body"><div class="cb-listing-card-title">تغذية الذكاء الاصطناعي بالسياق (Prompt)</div><div class="cb-listing-card-text"><p>يُتيح تقديم السياق الكافي للذكاء الاصطناعي استيعاب المطلوب بدرجة أعلى من الدقة؛ فكلما غدا السياق أكثر وضوحاً وتفصيلاً، جاءت المخرجات أقرب لتلبية تطلعاتك وتحقيق الغرض المنشود.</p></div></div></div><div class="cb-listing-card"><div class="cb-listing-card-left-bar"></div><div class="cb-listing-card-body"><div class="cb-listing-card-title">الاختبار والمراجعة</div><div class="cb-listing-card-text"><p>تقوم هذه المرحلة على فحص المخرجات بعد كل نسخة لمعرفة ما يعمل بنجاح وما يتطلب التعديل والتطوير؛ فالمراجعة هنا جزء أصيل من عملية التعلم وتطوير المنتج، وليست مجرد خطوة إضافية.</p></div></div></div><div class="cb-listing-card"><div class="cb-listing-card-left-bar"></div><div class="cb-listing-card-body"><div class="cb-listing-card-title">التحسين والتكرار</div><div class="cb-listing-card-text"><p>تتجسد هذه المرحلة في توظيف التغذية الراجعة والملاحظات لإعادة البناء وتطوير النسخة التالية بشكل أكفأ؛ إذ يعتمد المبدأ كاملاً على حركة دائرية مستمرة: بناء، ثم تحسين، ثم بناء من جديد.</p></div></div></div></div><div class="cb-generic-section"><h4>مثال توضيحي: تطوير تطبيق تعليمي</h4> <p>يُجسّد هذا المثال كيفية تطبيق حلقة <b>Vibe Coding</b> عملياً لبناء تطبيق يُعين الطلاب على مراجعة المصطلحات:</p><ul><li><p><b>1. تحديد الهدف:</b> بدلاً من بناء التطبيق كاملاً في محاولة واحدة، تبدأ بأسئلة جوهرية تضبط المسار: من الفئة المستهدفة؟ ما المشكلة المراد حلّها؟ وما الميزة الأساسية الأولى؟</p></li><li><p><b>2. البناء التدريجي:</b> تشييد نسخة أولية مصغرة جداً، تتألف من واجهة واحدة تشتمل فقط على حقل إدخال للمصطلح وزر حفظ.</p></li><li><p><b>3. تغذية الذكاء الاصطناعي بالسياق (Prompt):</b> إمداد النموذج بالتعليمات والمحددات المطلوبة لبناء هذه الواجهة بدقة ودون تعقيد.</p></li><li><p><b>4. الاختبار والمراجعة:</b> فحص المخرج وتقويم التجربة: هل الواجهة واضحة للمستخدم؟ هل هناك أي قصور في الأداء؟</p></li><li><p><b>5. التحسين والتكرار:</b> توظيف الملاحظات والتغذية الراجعة لتطوير النسخة التالية وإضافة مزايا جديدة، لتستمر حلقة التطوير والارتقاء بالمخرج.</p></li></ul></div><div class="cb-generic-section"><h4>آلية عمل الحلقة التفاعلية كاملة</h4><p>تعتمد هذه الدورة على تحويل الفكرة من مجرد هدف إلى نسخة أولية خاضعة للمراجعة والاختبار، ثم إعادة تحسينها بناءً على الملاحظات. والغاية هنا ليست مجرد الإسراع في التنفيذ، بل الاعتماد على خطوات متدرجة ومتكررة بدلاً من محاولة إخراج المنتج النهائي المكتمل من المحاولة الأولى.</p><p><strong>المسار الإجرائي للحلقة:</strong></p><div class="loop"><span>الهدف</span><i>←</i><span>البناء</span><i>←</i><span>السياق</span><i>←</i><span>الاختبار</span><i>←</i><span>الملاحظات</span><i>←</i><span>التحسين</span><i>←</i><span>إعادة البناء</span></div><p><strong>أهمية هذا التسلسل:</strong></p><ul><li><p><b>التعلم المستمر:</b> استخلاص الدروس والتغذية الراجعة من كل نسخة يتم إنتاجها.</p></li><li><p><b>الحد من التشتت:</b> التركيز على تطوير جزئيات محددة في كل مرحلة.</p></li><li><p><b>تجويد المخرجات:</b> رفع كفاءة المنتج النهائي وصقله تدريجياً مع كل دورة عمل.</p></li></ul></div><div class="pdf-text-block" style="margin-top:6px"><h4>تحقّق من فهمك</h4></div><div class="quiz" data-pass="1"><fieldset class="q" data-correct="1"><legend><span class="qn">1</span>ما الفكرة الأساسية في هذا التسلسل العملي؟</legend><label class="opt"><input type="radio" name="q2" value="0"><span>تحاول الوصول إلى المنتج النهائي من أول خطوة</span></label><label class="opt"><input type="radio" name="q2" value="1"><span>تبني نسخة صغيرة ثم تراجعها وتحسنها باستمرار</span></label><label class="opt"><input type="radio" name="q2" value="2"><span>تبدأ بالاختبار قبل أن تحدد الهدف</span></label><label class="opt"><input type="radio" name="q2" value="3"><span>تكتفي بالسياق بدون اختبار أو تعديل</span></label></fieldset><div class="quiz-actions"><button class="btn primary q-check" type="button">تحقق من إجابتي</button><button class="btn ghost q-reset" type="button" hidden>أعد المحاولة</button></div><div class="quiz-result" role="status"></div></div></div>
+</section>
+<section class="screen" data-i="6" hidden>
+  <div class="hero"><div class="hero-in">
+    <div class="eyebrow">الوحدة 3 · المبادئ الخمسة</div>
+    <h1>أدوات ذكاء اصطناعي مساندة لـ Vibe Coding</h1>
+  </div></div>
+  <div class="content"><div class="pdf-text-block"><p>هذه الصفحة تشرح الأدوات المساندة في Vibe Coding، وكيف يمكن استخدامها عبر مراحل التخطيط، بناء الواجهات، والاختبار والتحسين.</p><p>يساعد هذا القسم على فهم كيف تدعم أدوات الذكاء الاصطناعي مراحل Vibe Coding المختلفة، من التخطيط الأولي إلى بناء الواجهات والنماذج الأولية.</p></div><div class="cb-listing-cards"><div class="cb-listing-card"><div class="cb-listing-card-left-bar"></div><div class="cb-listing-card-body"><div class="cb-listing-card-title">1. أدوات المحادثة والتخطيط</div><div class="cb-listing-card-text"><p>قبل البدء في كتابة أي كود، يحتاج المطور إلى تحويل الفكرة العامة إلى متطلبات واضحة.</p><p>يمكن استخدام أدوات مثل Claude وChatGPT للمساعدة في:</p><ul><li>تحويل فكرة التطبيق إلى متطلبات واضحة.</li><li>تحديد الوظائف الأساسية.</li><li>اقتراح هيكل التطبيق.</li><li>تقسيم المشروع إلى مهام صغيرة.</li><li>مناقشة الخيارات التقنية المناسبة.</li><li>اكتشاف الحالات التي قد يغفل عنها المبتدئ.</li></ul></div></div></div><div class="cb-listing-card"><div class="cb-listing-card-left-bar"></div><div class="cb-listing-card-body"><div class="cb-listing-card-title">2. أدوات بناء التطبيقات بالذكاء الاصطناعي</div><div class="cb-listing-card-text"><p>تتيح هذه الأدوات للمستخدم وصف فكرة التطبيق وما يريد منه أن يفعله، ثم تساعده في تحويل الفكرة إلى نموذج أو تطبيق قابل للتجربة والتطوير.</p><h4>ومن أمثلتها:</h4><ul><li>Claude Code</li><li>Cursor</li><li>GitHub Copilot</li><li>Replit</li><li>Lovable</li><li>Bolt</li></ul></div></div></div><div class="cb-listing-card"><div class="cb-listing-card-left-bar"></div><div class="cb-listing-card-body"><div class="cb-listing-card-title">3. البدء بنموذج أولي وتطويره تدريجيًا</div><div class="cb-listing-card-text"><p>عندما تكون الفكرة في بدايتها، لا تحتاج إلى بناء تطبيق متكامل من المحاولة الأولى. يمكن البدء بنموذج أولي بسيط لاختبار الفكرة والواجهة، ثم تطويره وإضافة الوظائف تدريجيًا.</p><h4>يمكن استخدام أدوات مثل:</h4><ul><li>Replit</li><li>Lovable</li><li>Bolt</li><li>v0</li></ul></div></div></div></div></div>
+</section>
+<section class="screen" data-i="7" hidden>
+  <div class="hero"><div class="hero-in">
+    <div class="eyebrow">الوحدة 3 · المبادئ الخمسة</div>
+    <h1>كيف تختار الأداة المناسبة؟</h1>
+  </div></div>
+  <div class="content"><div class="pdf-text-block"><h4>كيف يختار المبتدئ الأداة المناسبة؟</h4><p>بدل حفظ أسماء الأدوات، انطلق من حاجتك الحالية:</p></div><div class="chooser"><div class="chooser-row"><span class="need">لدي فكرة وأحتاج إلى ترتيبها</span><span class="arrow">←</span><span class="tool ar">أداة محادثة وتخطيط</span></div><div class="chooser-row"><span class="need">أريد إنشاء نموذج أولي بسرعة</span><span class="arrow">←</span><span class="tool ar">أداة بناء التطبيقات</span></div><div class="chooser-row"><span class="need">أريد كتابة وتعديل الكود</span><span class="arrow">←</span><span class="tool">AI Coding Assistant / Agent</span></div><div class="chooser-row"><span class="need">لدي خطأ في الكود</span><span class="arrow">←</span><span class="tool ar">أداة تحليل وتصحيح</span></div><div class="chooser-row"><span class="need">أريد مراجعة الكود</span><span class="arrow">←</span><span class="tool">AI Code Review</span></div><div class="chooser-row"><span class="need">أريد ربط الذكاء الاصطناعي بأدوات خارجية</span><span class="arrow">←</span><span class="tool">MCP</span></div><div class="chooser-row"><span class="need">لدي مهام متكررة</span><span class="arrow">←</span><span class="tool">Skills / Automation</span></div><div class="chooser-row"><span class="need">لدي مشروع كبير ومهام متعددة</span><span class="arrow">←</span><span class="tool">Agents / Subagents</span></div></div><div class="cb-generic-section"><h4>خطأ شائع</h4><p>من الأخطاء الشائعة في <b>Vibe Coding</b> أن يبدأ المستخدم بالسؤال: <strong>«ما أفضل أداة للبرمجة بالذكاء الاصطناعي؟»</strong></p><p>والأدق أن يبدأ بالسؤال: <strong>«ما المشكلة التي أحاول حلها؟ وما المرحلة التي أعمل عليها الآن؟»</strong></p><p>قد تكون أداة المحادثة هي الخيار الأنسب في مرحلة التخطيط، بينما تكون أداة Coding Agent أكثر ملاءمة عند التعامل مع مشروع قائم، وقد تكون أداة بناء النماذج الأولية أسرع عندما يكون الهدف اختبار فكرة واجهة.</p></div><div class="rule"><h4>الخلاصة</h4><p>لا تكمن مهارة <b>Vibe Coding</b> في معرفة أكبر عدد ممكن من أدوات الذكاء الاصطناعي، وإنما في اختيار الأداة المناسبة للمهمة المناسبة، وتوجيهها بوضوح، ثم التحقق من النتائج التي تنتجها.</p><p style="margin-top:8px">ومع ازدياد تعقيد المشروع، ينتقل دور الذكاء الاصطناعي تدريجيًا من مجرد مساعد في كتابة الكود إلى شريك في الاستكشاف والتخطيط والتنفيذ والاختبار والتحسين.</p></div></div>
+</section>
+<section class="screen" data-i="8" hidden>
+  <div class="hero"><div class="hero-in">
+    <div class="eyebrow">الوحدة 4 · كتابة تعليمات فعالة</div>
+    <h1>أُسس التعليمات الفعّالة</h1>
+  </div></div>
+  <div class="content"><div class="pdf-text-block"><h4>كيف تجعل التعليمات أكثر وضوحاً ودقة؟</h4> <p>لا تُقاس جودة التعليمات (Prompt) بطولها، بل بدرجة دقتها ووضوحها؛ إذ تهدف إلى تقديم صورة منظمة ومتكاملة للذكاء الاصطناعي توضّح طبيعة المطلوب وتقلّص الاحتمالات المفتوحة.</p> <p>إن غياب أي عنصر من هذه المبادئ يزيد من مستوى الغموض، فيتحول أداء النموذج من التنفيذ الدقيق إلى التخمين العشوائي.</p></div><div class="cb-generic-section"><h4>عناصر مكونات التعليمات</h4><ul><li><p><b>1. الهدف:</b> يحدد ما ترغب في بنائه وإنشائه بوضوح.</p></li><li><p><b>2. الجمهور:</b> يوضح الفئة المستهدفة وطبيعة المستخدمين النهائيين.</p></li><li><p><b>3. المطلوب الآن:</b> يضبط الخطوة التنفيذية الحالية المراد إنجازها في هذه المرحلة.</p></li><li><p><b>4. القيود:</b> يحدد المحددات التقنية والثوابت التي لا يُسمح بتجاوزها أو تغييرها.</p></li><li><p><b>5. السياق:</b> يزود النموذج بالخلفية والمعلومات اللازمة لاستيعاب الطلب بدقة.</p></li><li><p><b>6. معيار النجاح:</b> يحدد الضوابط التي يُحكم من خلالها على كفاءة النتيجة وقبول المخرج.</p></li></ul></div><figure class="figure"><img class="content-image" loading="lazy" src="prompt-elements.jpg" alt="العناصر الستة للتعليمات: الهدف، الجمهور، المطلوب الآن، القيود، السياق، معيار النجاح"><figcaption>*تم توليد هذه الصورة باستخدام الذكاء الاصطناعي</figcaption></figure><details class="acc"><summary>أسلوب صياغة التعليمات بفعالية</summary><div class="acc-body"><p>ابدأ بجملة مختصرة توضح الهدف، ثم حدد الجمهور والمطلوب في الوقت الحالي. أضف قيدًا أو اثنين مع سياق مختصر، وأنهِ الطلب بمؤشر نجاح واضح.</p></div></details><details class="acc"><summary>كيف تتعامل مع الطلبات العامة؟</summary><div class="acc-body"><ul><li><b>قسّم المشروع:</b> لا تطلب تنفيذ التطبيق كاملًا دفعة واحدة، بل جزّئه إلى خطوات صغيرة ومستقلة.</li><li><b>استخدم الهيكل السداسي:</b> استرجع العناصر الستة (الهدف، الجمهور، المطلوب الآن، القيود، السياق، معيار النجاح) واملأ الفراغات لتحديد نطاق الطلب.</li><li><b>استعن بالذكاء الاصطناعي للتخطيط:</b> اطلب من النموذج تقسيم المهمة بعبارة مثل: «المشروع كبير، اقترح عليّ خطة مقسّمة لنبدأ بالخطوة الأولى فقط».</li><li><b>ركّز على النسخة الأولية:</b> حدّد الميزة الأساسية الضرورية الآن، وأجّل المزايا المتقدمة للمراحل التالية.</li></ul></div></details><details class="acc"><summary>متى يجب مراجعة الطلب؟</summary><div class="acc-body"><p>ارجع إلى المكونات الستة إذا شعرت أن المخرجات لم تحقق الفكرة أو أصبحت عامة بشكل مفرط. عادةً، تكمن المشكلة في عنصر مفقود أو غير محدد.</p></div></details></div>
+</section>
+<section class="screen" data-i="9" data-gate="quiz" hidden>
+  <div class="hero"><div class="hero-in">
+    <div class="eyebrow">الوحدة 4 · كتابة تعليمات فعالة</div>
+    <h1>اختبار الوحدة الرابعة</h1>
+  </div></div>
+  <div class="content"><div class="quiz" data-pass="3"><fieldset class="q" data-correct="2"><legend><span class="qn">1</span>أيّ مما يلي يُعد من العناصر الأساسية في كتابة تعليمات فعالة؟</legend><label class="opt"><input type="radio" name="q7" value="0"><span>عدم ذكر النتيجة المتوقعة</span></label><label class="opt"><input type="radio" name="q7" value="1"><span>استخدام مصطلحات غامضة</span></label><label class="opt"><input type="radio" name="q7" value="2"><span>توضيح الخطوات بشكل تسلسلي</span></label><label class="opt"><input type="radio" name="q7" value="3"><span>إضافة معلومات غير ذات صلة</span></label></fieldset><fieldset class="q" data-correct="2"><legend><span class="qn">2</span>عند كتابة التعليمات، ما الذي يجب تجنّبه؟</legend><label class="opt"><input type="radio" name="q8" value="0"><span>التسلسل المنطقي في الخطوات</span></label><label class="opt"><input type="radio" name="q8" value="1"><span>الأمثلة التي تصف الخطوات</span></label><label class="opt"><input type="radio" name="q8" value="2"><span>العبارات الغامضة أو غير الدقيقة</span></label><label class="opt"><input type="radio" name="q8" value="3"><span>نقاط العمل الواضحة</span></label></fieldset><fieldset class="q" data-correct="3"><legend><span class="qn">3</span>أي عنصر من عناصر التعليمات الستة يوضّح كيف نعرف أن النتيجة جيدة؟</legend><label class="opt"><input type="radio" name="q9" value="0"><span>الجمهور</span></label><label class="opt"><input type="radio" name="q9" value="1"><span>القيود</span></label><label class="opt"><input type="radio" name="q9" value="2"><span>السياق</span></label><label class="opt"><input type="radio" name="q9" value="3"><span>معيار النجاح</span></label></fieldset><fieldset class="q" data-correct="1"><legend><span class="qn">4</span>طلبت من الذكاء الاصطناعي بناء مشروع كبير فجاءت المخرجات عامة. ما الخطوة الأنسب؟</legend><label class="opt"><input type="radio" name="q10" value="0"><span>إعادة إرسال الطلب نفسه حتى تتحسن النتيجة</span></label><label class="opt"><input type="radio" name="q10" value="1"><span>تقسيم المشروع إلى خطوات صغيرة والبدء بالنسخة الأولية مع استكمال العناصر الستة</span></label><label class="opt"><input type="radio" name="q10" value="2"><span>إضافة كل المزايا المتقدمة في طلب واحد</span></label><label class="opt"><input type="radio" name="q10" value="3"><span>الاستغناء عن ذكر القيود والسياق لتقصير الطلب</span></label></fieldset><div class="quiz-actions"><button class="btn primary q-check" type="button">تحقق من إجاباتي</button><button class="btn ghost q-reset" type="button" hidden>أعد المحاولة</button></div><div class="quiz-result" role="status"></div></div></div>
+</section>
+<section class="screen" data-i="10" hidden>
+  <div class="hero"><div class="hero-in">
+    <div class="eyebrow">الوحدة 5 · المعرفة المطلوبة والمراجعة</div>
+    <h1>لماذا ما زالت البرمجة مهمة؟</h1>
+  </div></div>
+  <div class="content"><div class="pdf-text-block"><h4>الفكرة الأساسية: التفكير البرمجي في عصر Vibe Coding</h4><p>لا يلغي أسلوب Vibe Coding الحاجة للأساسيات البرمجية، بل يرفع من قيمتها؛ فالهدف ليس الاستغناء عن المعرفة التقنية، بل توظيفها بشكل أذكى لتكتب كوداً أقل وتفهم وتوجّه بدرجة أكبر.</p><p>تظل الأساسيات ضرورية لتتحول من مجرد متلقٍّ إلى موجه يقيّم مخرجات الذكاء الاصطناعي بنظرة ناقدة بدلاً من الاعتماد الأعمى.</p><h4>لماذا تظل الأساسيات البرمجية ضرورية؟</h4><ul><li><p><b>تقييم جودة المخرجات:</b> القدرة على تمييز الكود النظيف والآمن من الكود غير الكفء أو المليء بالثغرات.</p></li><li><p><b>توجيه الذكاء الاصطناعي بدقة:</b> صياغة تعليمات برمجية (Prompts) متماسكة تستخدم المصطلحات التقنية والمنطق الصحيح.</p></li><li><p><b>تصحيح الأخطاء (Debugging):</b> فهم مكامن الخلل عندما تتوقف الشفرة عن العمل، واكتشاف الأخطاء التي قد تفوت على النموذج.</p></li><li><p><b>تجميع الأجزاء:</b> معرفة كيفية ربط الواجهات والمكتبات وقواعد البيانات ببعضها لتكوين نظام متكامل يعمل بسلاسة.</p></li></ul></div><div class="pdf-text-block"><h4>ما الذي يفرُق معك عملياً؟</h4><p>كلما ارتقى فهمك للأساسيات البرمجية، تحوّلت عملية البرمجة من مجرد رصفٍ للأكواد إلى منظومة متكاملة من: الفهم + التقييم + اتخاذ القرار.</p><p><strong>مكاسب الفهم العميق للأساسيات مع الذكاء الاصطناعي:</strong></p><ul><li><p><b>توجيه دقيق:</b> القدرة على قيادة النموذج نحو حلول تقنية سديدة وقريبة من الهدف من المرة الأولى.</p></li><li><p><b>مراجعة منطقية:</b> فحص النتيجة والتحقق من سلامة البناء البرمجي وتدفق البيانات المنطقي.</p></li><li><p><b>اكتشاف خاطف للأخطاء:</b> صيد الثغرات البرمجية والخلل الذي قد يمرّ سريعاً وتغفل عنه العين.</p></li><li><p><b>تقييم الملاءمة:</b> إطلاق حكم صائب حول المخرج: هل الكود صحيح؟ هل هو مناسب تقنياً؟ وهل يلبي احتياج المشروع بالفعل؟</p></li></ul></div><div class="cb-summary-cards"><div class="cb-summary-card"><div class="cb-summary-card-title">الأساسيات</div><div class="cb-summary-card-content"><p>فهم البرمجة يُعزّز قدرتك على التعامل مع مخرجات الذكاء الاصطناعي ولا يُضعفها؛ فكلما عمُق الاستيعاب، ارتفعت جودة التوجيه وتضاعفت دقة المراجعة.</p></div></div><div class="cb-summary-card"><div class="cb-summary-card-title">فحص النتيجة</div><div class="cb-summary-card-content"><p>ليس كل كود يُنتجه الذكاء الاصطناعي مناسباً بشكل تلقائي؛ لذا ينبغي دوماً طرح سؤالين محوريين: هل الحل صحيح تقنياً؟ وهل يخدم الهدف الفعلي للمشروع؟</p></div></div><div class="cb-summary-card"><div class="cb-summary-card-title">دور الإنسان</div><div class="cb-summary-card-content"><p>يتولى الذكاء الاصطناعي مهام الصياغة والتوليد، بينما يختص الإنسان بمراجعة المخرجات وتقدير ملاءمتها، واتخاذ قرار الاعتماد أو التعديل أو الرفض.</p></div></div></div><div class="flips"><button class="flip" type="button" aria-pressed="false"><span class="flip-inner"><span class="flip-face flip-a"><span class="flip-num">أولاً</span><span class="flip-head">هل أقدر أستغني عن البرمجة؟</span><span class="flip-hint">اضغط للكشف</span></span><span class="flip-face flip-b"><span class="flip-head">هل أقدر أستغني عن البرمجة؟</span><span class="flip-body"><span class="fp"><strong>لا.</strong> Vibe Coding يقلل الحاجة لكتابة كل سطر يدويًا، لكنه ما يلغي أهمية فهم البرمجة.</span></span></span></span></button><button class="flip" type="button" aria-pressed="false"><span class="flip-inner"><span class="flip-face flip-a"><span class="flip-num">ثانياً</span><span class="flip-head">وش يفيدني الفهم؟</span><span class="flip-hint">اضغط للكشف</span></span><span class="flip-face flip-b"><span class="flip-head">وش يفيدني الفهم؟</span><span class="flip-body"><span class="fp">يساعدك على <strong>توجيه الذكاء الاصطناعي</strong> ومراجعة نتائجه بشكل أفضل.</span></span></span></span></button><button class="flip" type="button" aria-pressed="false"><span class="flip-inner"><span class="flip-face flip-a"><span class="flip-num">ثالثاً</span><span class="flip-head">وش أسأل عن الكود؟</span><span class="flip-hint">اضغط للكشف</span></span><span class="flip-face flip-b"><span class="flip-head">وش أسأل عن الكود؟</span><span class="flip-body"><span class="fp">هل الكود <strong>مناسب</strong>؟ هل الحل <strong>صحيح</strong>؟ هل <strong>يلبي الهدف</strong>؟</span></span></span></span></button><button class="flip" type="button" aria-pressed="false"><span class="flip-inner"><span class="flip-face flip-a"><span class="flip-num">رابعاً</span><span class="flip-head">مين يتخذ القرار؟</span><span class="flip-hint">اضغط للكشف</span></span><span class="flip-face flip-b"><span class="flip-head">مين يتخذ القرار؟</span><span class="flip-body"><span class="fp">الذكاء الاصطناعي يكتب، لكن <strong>الإنسان</strong> هو اللي يقيّم ويقرر.</span></span></span></span></button></div><div class="rule"><h4>خذها كقاعدة</h4> <p>إذا كنت تستخدم Vibe Coding، فلا تتعامل مع المخرجات كأنها نهائية لمجرد أنها خرجت من الذكاء الاصطناعي. الفهم البرمجي هو اللي يخليك تميّز بين <strong>حل يبدو جيدًا</strong> و<strong>حل فعلاً مناسب</strong>.</p> <p><strong>القاعدة الذهبية:</strong> كلما زاد فهمك للأساسيات، صار اعتمادك على الذكاء الاصطناعي أذكى، مو أكبر.</p></div></div>
+</section>
+<section class="screen" data-i="11" hidden>
+  <div class="hero"><div class="hero-in">
+    <div class="eyebrow">الوحدة 5 · المعرفة المطلوبة والمراجعة</div>
+    <h1>ما الذي يجب مراجعته؟</h1>
+  </div></div>
+  <div class="content"><div class="pdf-text-block"><h4>لماذا تُعد هذه المعرفة مهمة؟</h4><p>في أسلوب Vibe Coding، يمكن للذكاء الاصطناعي توليد جزء كبير من الشيفرة البرمجية، إلا أن ذلك لا يعني تراجع أهمية معرفة المبرمج ومهاراته. على العكس، كلما امتلك المتعلم فهمًا أفضل لأساسيات البرمجة، أصبح أكثر قدرة على توجيه نماذج الذكاء الاصطناعي، وتقييم مخرجاتها، والتحقق من صحتها، واكتشاف الأخطاء والمشكلات المحتملة قبل أن تؤثر في التطبيق.</p><p>لا يُشترط في Vibe Coding أن يحفظ المتعلم كل سطر برمجي أو يكتبه يدويًا، وإنما الأهم أن يمتلك المعرفة التي تمكّنه من فهم الحلول البرمجية وتقييم مدى ملاءمتها للهدف المطلوب.</p><p><strong>ومن الأسئلة الأساسية التي ينبغي أن يكون المتعلم قادرًا على الإجابة عنها:</strong></p><ul><li>هل الحل المقترح مناسب للمهمة المطلوبة؟</li><li>هل الشيفرة البرمجية صحيحة من الناحية التقنية؟</li><li>هل يحقق الحل الهدف الوظيفي المطلوب؟</li><li>هل توجد أخطاء أو مشكلات قد تؤثر في أداء التطبيق؟</li><li>هل يمكن تطوير الحل أو تعديله مستقبلًا بسهولة؟</li></ul><p>لذلك، فإن القيمة الحقيقية في Vibe Coding لا تكمن في القدرة على توليد الشيفرة البرمجية فحسب، وإنما في القدرة على فهمها وتقييمها وتوجيه عملية تطويرها. وهذا ما يميز بين الاستخدام السطحي للذكاء الاصطناعي وبين توظيفه كأداة فعّالة في بناء تطبيقات موثوقة.</p></div><div class="cb-listing-cards"><div class="cb-listing-card"><div class="cb-listing-card-left-bar"></div><div class="cb-listing-card-body"><div class="cb-listing-card-title">أساسيات البرمجة</div><div class="cb-listing-card-text"><p>تفهمك للمتغيرات، الشروط، الحلقات، والدوال يساعدك تكتشف إذا الكود منطقي أو فيه خلل في الفكرة نفسها.</p></div></div></div><div class="cb-listing-card"><div class="cb-listing-card-left-bar"></div><div class="cb-listing-card-body"><div class="cb-listing-card-title">هياكل البيانات</div><div class="cb-listing-card-text"><p>تعرفك على القوائم، القواميس، والمصفوفات يخلّيك تختار تمثيل البيانات المناسب وتلاحظ إذا الحل متعب أو غير كفء.</p></div></div></div><div class="cb-listing-card"><div class="cb-listing-card-left-bar"></div><div class="cb-listing-card-body"><div class="cb-listing-card-title">قواعد البيانات</div><div class="cb-listing-card-text"><p>هذا المجال يفيدك لما تراجع تخزين البيانات، الاسترجاع، والعلاقات بين الجداول، خصوصًا إذا التطبيق يعتمد على معلومات متغيرة.</p></div></div></div><div class="cb-listing-card"><div class="cb-listing-card-left-bar"></div><div class="cb-listing-card-body"><div class="cb-listing-card-title">تطوير الويب</div><div class="cb-listing-card-text"><p>يفيدك في فهم الواجهة، المسارات، والاتصال بين الطرف الأمامي والخلفي، وبالتالي تعرف إذا التطبيق شغال كمنظومة متكاملة.</p></div></div></div><div class="cb-listing-card"><div class="cb-listing-card-left-bar"></div><div class="cb-listing-card-body"><div class="cb-listing-card-title">الأخطاء البرمجية</div><div class="cb-listing-card-text"><p>معرفة الأخطاء الشائعة وأنواعها تساعدك تميّز المشكلة بسرعة وتوجّه الذكاء الاصطناعي نحو إصلاح أدق.</p></div></div></div><div class="cb-listing-card"><div class="cb-listing-card-left-bar"></div><div class="cb-listing-card-body"><div class="cb-listing-card-title">هندسة البرمجيات</div><div class="cb-listing-card-text"><p>تعطيك نظرة على التصميم، التنظيم، القابلية للصيانة، وكيف تنقسم المكونات بشكل يسهّل التطوير والتحسين.</p></div></div></div><div class="cb-listing-card"><div class="cb-listing-card-left-bar"></div><div class="cb-listing-card-body"><div class="cb-listing-card-title">الأمن البرمجي</div><div class="cb-listing-card-text"><p>يساعدك تراجع المخاطر والثغرات، وتنتبه إذا الكود يفتح بابًا لمشاكل في الحماية أو التعامل مع البيانات.</p></div></div></div></div><div class="cb-generic-section"><h4>كيف تستخدم هالمعارف وقت المراجعة؟</h4> <p>إذا جاءك كود من الذكاء الاصطناعي، لا تكتفي إنّه “يشتغل” فقط. افحصه من زاويتين: <strong>الوظيفة</strong> و<strong>الجودة</strong>. الوظيفة تعني هل يحقق المطلوب، والجودة تعني هل هو واضح، آمن، قابل للتعديل، ومبني بطريقة مناسبة.</p> <p class="check-note">الفكرة الأساسية: الذكاء الاصطناعي يكتب، لكن <strong>أنت</strong> تقرر إذا الناتج يصلح للاستخدام أو يحتاج تعديل واختبار.</p></div><details class="acc"><summary>وش تسأل؟</summary><div class="acc-body"><p>اسأل: هل هذا الكود مناسب للمطلوب؟ هل فيه منطق صحيح؟ وهل فيه أجزاء تحتاج تبسيط أو إعادة تنظيم؟</p></div></details><details class="acc"><summary>وش تختبر؟</summary><div class="acc-body"><p>اختبر السلوك في أكثر من حالة، مو بس الحالة الطبيعية. أحيانًا الخطأ يطلع مع بيانات فارغة، أو مدخلات غير متوقعة، أو حجم بيانات أكبر.</p></div></details><details class="acc"><summary>وش تراجع؟</summary><div class="acc-body"><p>راجع البنية، الأسماء، الاعتمادية بين الأجزاء، وكيفية إدارة البيانات، لأن هذه الأشياء تؤثر على سهولة الصيانة لاحقًا.</p></div></details><details class="acc"><summary>وش تنتبه له؟</summary><div class="acc-body"><p>انتبه للأمان، خصوصًا إذا فيه إدخال من المستخدم أو تخزين بيانات أو صلاحيات وصول. أي ثغرة هنا ممكن تصير مشكلة أكبر من الخطأ نفسه.</p></div></details><div class="flips"><button class="flip" type="button" aria-pressed="false"><span class="flip-inner"><span class="flip-face flip-a"><span class="flip-num">أولاً</span><span class="flip-head">هل الكود مناسب؟</span><span class="flip-hint">اضغط للكشف</span></span><span class="flip-face flip-b"><span class="flip-head">هل الكود مناسب؟</span><span class="flip-body"><span class="fp">اسأل إذا الحل يحقق الهدف فعلاً، مو فقط إذا يطلع نتيجة.</span></span></span></span></button><button class="flip" type="button" aria-pressed="false"><span class="flip-inner"><span class="flip-face flip-a"><span class="flip-num">ثانياً</span><span class="flip-head">منطق البرمجة</span><span class="flip-hint">اضغط للكشف</span></span><span class="flip-face flip-b"><span class="flip-head">منطق البرمجة</span><span class="flip-body"><span class="fp">فهم الشروط والحلقات والدوال يساعدك تكشف الخلل في طريقة التفكير.</span></span></span></span></button><button class="flip" type="button" aria-pressed="false"><span class="flip-inner"><span class="flip-face flip-a"><span class="flip-num">ثالثاً</span><span class="flip-head">تنظيم البيانات</span><span class="flip-hint">اضغط للكشف</span></span><span class="flip-face flip-b"><span class="flip-head">تنظيم البيانات</span><span class="flip-body"><span class="fp">اختيار الهيكل المناسب يفرق في الكفاءة والوضوح وسهولة التوسّع.</span></span></span></span></button><button class="flip" type="button" aria-pressed="false"><span class="flip-inner"><span class="flip-face flip-a"><span class="flip-num">رابعاً</span><span class="flip-head">جودة التصميم</span><span class="flip-hint">اضغط للكشف</span></span><span class="flip-face flip-b"><span class="flip-head">جودة التصميم</span><span class="flip-body"><span class="fp">الكود الجيد يكون مفهوم، قابل للتعديل، ومقسّم بشكل واضح.</span></span></span></span></button><button class="flip" type="button" aria-pressed="false"><span class="flip-inner"><span class="flip-face flip-a"><span class="flip-num">خامساً</span><span class="flip-head">الأمان أولًا</span><span class="flip-hint">اضغط للكشف</span></span><span class="flip-face flip-b"><span class="flip-head">الأمان أولًا</span><span class="flip-body"><span class="fp">أي مراجعة ناقصة للأمن ممكن تخلي الحل صحيح ظاهريًا لكنه خطر عمليًا.</span></span></span></span></button></div><div class="pdf-text-block"><h4>الخلاصة العملية</h4> <p>إذا كنت تستخدم الذكاء الاصطناعي في البرمجة، فالمعرفة البرمجية ما هي رفاهية؛ هي أداة مراجعة. كل مجال من المجالات السبعة يعطيك زاوية مختلفة تشوف منها الناتج: هل هو صحيح، مناسب، منظم، وآمن؟</p> </div><div class="rule"><h4>قاعدة تحفظها</h4><p>الذكاء الاصطناعي يسرّع الكتابة، لكن فهمك أنت هو اللي يضمن الجودة.</p></div></div>
+</section>
+<section class="screen" data-i="12" data-gate="quiz" hidden>
+  <div class="hero"><div class="hero-in">
+    <div class="eyebrow">الوحدة 5 · المعرفة المطلوبة والمراجعة</div>
+    <h1>اختبار الوحدة الخامسة</h1>
+  </div></div>
+  <div class="content"><div class="quiz" data-pass="4"><fieldset class="q" data-correct="2"><legend><span class="qn">1</span>ما أحد أهم أسباب بقاء المعرفة البرمجية أساسية عند استخدام الذكاء الاصطناعي في التطوير؟</legend><label class="opt"><input type="radio" name="q11" value="0"><span>لأن المعرفة البرمجية تجعل جميع التطبيقات سهلة الاستخدام</span></label><label class="opt"><input type="radio" name="q11" value="1"><span>لتجنب الحاجة إلى تحديث المعلومات</span></label><label class="opt"><input type="radio" name="q11" value="2"><span>لأنها تمكّن المطوّر من تقييم مخرجات الذكاء الاصطناعي واكتشاف أخطائها</span></label><label class="opt"><input type="radio" name="q11" value="3"><span>لأن البرمجة تعقّد عملية التطوير</span></label></fieldset><fieldset class="q" data-correct="2"><legend><span class="qn">2</span>ما الذي يجب على المطوّر فعله بشكل دوري لتعزيز تجربته مع الذكاء الاصطناعي؟</legend><label class="opt"><input type="radio" name="q12" value="0"><span>استخدام نفس خوارزميات البرمجة لسنوات طويلة</span></label><label class="opt"><input type="radio" name="q12" value="1"><span>التقليل من استخدام الأدوات البرمجية</span></label><label class="opt"><input type="radio" name="q12" value="2"><span>متابعة أحدث الأبحاث والتطورات في مجال الذكاء الاصطناعي</span></label><label class="opt"><input type="radio" name="q12" value="3"><span>تجنب تعلم تقنيات جديدة والتمسك بالأساليب القديمة</span></label></fieldset><fieldset class="q" data-correct="1"><legend><span class="qn">3</span>ما الهدف الأساسي من استخدام أسلوب Vibe Coding في تطوير البرمجيات؟</legend><label class="opt"><input type="radio" name="q13" value="0"><span>تسريع عملية كتابة الكود البرمجي فقط</span></label><label class="opt"><input type="radio" name="q13" value="1"><span>التركيز على تحقيق الهدف النهائي للتطبيق</span></label><label class="opt"><input type="radio" name="q13" value="2"><span>الاعتماد الكامل على الذكاء الاصطناعي في البرمجة</span></label><label class="opt"><input type="radio" name="q13" value="3"><span>تقليل عدد المطورين في المشروع</span></label></fieldset><fieldset class="q" data-correct="1"><legend><span class="qn">4</span>ما الفائدة التي يحققها المطوّر من فهم الأساسيات البرمجية في سياق Vibe Coding؟</legend><label class="opt"><input type="radio" name="q14" value="0"><span>الاعتماد الأعمى على مخرجات الذكاء الاصطناعي</span></label><label class="opt"><input type="radio" name="q14" value="1"><span>اكتشاف الأخطاء بسرعة وتوجيه الذكاء الاصطناعي بدقة</span></label><label class="opt"><input type="radio" name="q14" value="2"><span>الاستغناء عن مراجعة الكود</span></label><label class="opt"><input type="radio" name="q14" value="3"><span>تجاهل تقييم جودة المخرجات</span></label></fieldset><fieldset class="q" data-correct="0"><legend><span class="qn">5</span>كيف يختار المطوّر الأداة المناسبة في Vibe Coding؟</legend><label class="opt"><input type="radio" name="q15" value="0"><span>بناءً على المرحلة التي يعمل عليها والمشكلة التي يحاول حلها</span></label><label class="opt"><input type="radio" name="q15" value="1"><span>بناءً على شهرة الأداة في السوق</span></label><label class="opt"><input type="radio" name="q15" value="2"><span>بناءً على توصيات الأصدقاء</span></label><label class="opt"><input type="radio" name="q15" value="3"><span>بناءً على سعر الأداة</span></label></fieldset><div class="quiz-actions"><button class="btn primary q-check" type="button">تحقق من إجاباتي</button><button class="btn ghost q-reset" type="button" hidden>أعد المحاولة</button></div><div class="quiz-result" role="status"></div></div></div>
+</section>
+<section class="screen" data-i="13" hidden>
+  <div class="hero"><div class="hero-in">
+    <div class="eyebrow">الوحدة 6 · الملخص</div>
+    <h1>النقاط الأساسية</h1>
+  </div></div>
+  <div class="content"><div class="pdf-text-block"><h4>تهانينا على إكمال الدورة!</h4> <p>نحتفل بانتهاء رحلتك التعليمية في دورة «Vibe Coding: البرمجة بأسلوب جديد». هذه الدورة كانت مسارًا مثيرًا لفهم كيفية تحويل الأفكار إلى تطبيقات عملية باستخدام تقنيات الذكاء الاصطناعي.</p> <h4>ملخص عن الدورة:</h4> <p>في هذه الدورة، تعرّفت على أسلوب Vibe Coding وكيفية الانتقال من فكرة بسيطة إلى تطبيق فعّال من خلال خطوات تعتمد على البناء التدريجي، الاختبار المستمر، والتحسين المتكرر. كما أن هذا الأسلوب يساعدك في صياغة تعليمات واضحة تُمكن الذكاء الاصطناعي من تقديم نتائج ذات جودة عالية.</p> <h4>مخرجات الدورة:</h4> <p>بعد إكمال الدورة، يجب أن تكون قادرًا على:</p> <ul> <li><strong>شرح مفهوم Vibe Coding</strong> وتمييزه عن أسلوب كتابة الكود التقليدي.</li> <li><strong>تطبيق المبادئ الخمسة</strong> لـ Vibe Coding على فكرة تطبيق بسيطة.</li> <li><strong>صياغة تعليمات واضحة</strong> ومحددة توجه الذكاء الاصطناعي نحو نتيجة مناسبة.</li> <li><strong>تقييم مخرجات الذكاء الاصطناعي</strong> واكتشاف ما يحتاج إلى تعديل أو اختبار.</li> <li><strong>تحديد المعارف البرمجية الأساسية</strong> التي تعزز استخدام Vibe Coding بفعالية.</li> </ul> <p>نتمنى لك كل التوفيق في مشاريعك المستقبلية ونشجعك على استخدام كل ما تعلمته في هذه الدورة لإبداع تطبيقات دقيقة وعالية الجودة!</p></div><div class="pdf-text-block"><h4>ما الذي غطّته كل وحدة؟</h4></div><details class="acc"><summary>1: المقدمة</summary><div class="acc-body"><p>التعريف بأسلوب Vibe Coding وما ستتعلمه في الدورة.</p></div></details><details class="acc"><summary>2: مدخل إلى Vibe Coding</summary><div class="acc-body"><p>البدء من الهدف بدل الكود، وحلقة العمل التكرارية: وصف ← بناء ← تجربة ← مراجعة ← ملاحظات ← تحسين ← تكرار.</p></div></details><details class="acc"><summary>3: المبادئ الخمسة</summary><div class="acc-body"><p>تحديد الهدف، البناء التدريجي، تغذية الذكاء الاصطناعي بالسياق، الاختبار والمراجعة، التحسين والتكرار؛ مع أدوات الذكاء الاصطناعي المساندة وكيف تختار الأداة حسب المرحلة.</p></div></details><details class="acc"><summary>4: كتابة تعليمات فعالة</summary><div class="acc-body"><p>العناصر الستة للتعليمات: الهدف، الجمهور، المطلوب الآن، القيود، السياق، معيار النجاح.</p></div></details><details class="acc"><summary>5: المعرفة المطلوبة والمراجعة</summary><div class="acc-body"><p>لماذا تبقى المعرفة البرمجية مهمة، والمجالات السبعة التي تراجع بها مخرجات الذكاء الاصطناعي من حيث الوظيفة والجودة والأمان.</p></div></details><details class="acc"><summary>6: الملخص</summary><div class="acc-body"><p>تلخيص النقاط الأساسية، ثم مشروع تطبيقي لبناء تطبيق مهام بمساعدة الذكاء الاصطناعي.</p></div></details></div>
+</section>
+<section class="screen" data-i="14" hidden>
+  <div class="hero"><div class="hero-in">
+    <div class="eyebrow">الوحدة 6 · الملخص</div>
+    <h1>مشروع تطبيقي</h1>
+  </div></div>
+  <div class="content"><div class="pdf-text-block"><p>طبّق ما تعلّمته في بناء تطبيق بسيط لإدارة المهام اليومية خطوة بخطوة. افتح كل خطوة واتبعها بالترتيب.</p></div><details class="acc"><summary>الخطوة الأولى: إنشاء المشروع</summary><div class="acc-body"><ol><li>سجّل الدخول إلى منصة Replit.</li><li>أنشئ مشروعًا جديدًا.</li><li>اختر أداة الذكاء الاصطناعي المدمجة في المنصة للمساعدة في إنشاء التطبيق.</li><li>قدّم وصفًا واضحًا ومحددًا لمتطلبات المشروع.</li></ol></div></details><details class="acc"><summary>الخطوة الثانية: كتابة الطلب للذكاء الاصطناعي</summary><div class="acc-body"><p>انسخ الطلب التالي وأرسله لأداة الذكاء الاصطناعي في Replit:</p><div class="prompt-box"><p>أنشئ تطبيق ويب بسيط لإدارة المهام اليومية (To-Do App).</p><p>يجب أن تحتوي الواجهة على عنوان رئيسي، وحقل لإدخال المهمة، وزر لإضافة المهمة، وقائمة لعرض المهام.</p><p>يجب أن يتمكن المستخدم من تحديد المهمة كمكتملة أو حذفها. وعند إكمال المهمة، يجب أن يظهر ذلك بصريًا من خلال تغيير تنسيقها.</p><p>أضف أيضًا عدادًا يوضح عدد المهام غير المكتملة.</p><p>اجعل التصميم بسيطًا وحديثًا ومتجاوبًا مع أجهزة الحاسب والأجهزة المحمولة.</p><p>لا تستخدم قاعدة بيانات في هذه المرحلة، بل احتفظ بالبيانات مؤقتًا أثناء تشغيل التطبيق.</p><p>أنشئ جميع الملفات البرمجية اللازمة لتشغيل التطبيق، ثم وضّح وظيفة كل ملف بشكل مختصر.</p></div></div></details><details class="acc"><summary>الخطوة الثالثة: مراجعة المخرجات</summary><div class="acc-body"><p>بعد أن يقوم الذكاء الاصطناعي بإنشاء التطبيق، لا يُنصح باعتماد الناتج مباشرة. ينبغي للمتدرب مراجعة التطبيق والتحقق من:</p><ul><li>توافق الواجهة مع المتطلبات المحددة.</li><li>عمل جميع الأزرار والوظائف بصورة صحيحة.</li><li>وضوح التصميم وسهولة استخدامه.</li><li>استجابة الواجهة لأحجام الشاشات المختلفة.</li><li>عدم وجود أخطاء ظاهرة أثناء تشغيل التطبيق.</li></ul></div></details><details class="acc"><summary>الخطوة الرابعة: تحسين التطبيق</summary><div class="acc-body"><p>بعد اختبار النسخة الأولى، يمكن استخدام الذكاء الاصطناعي لإجراء تحسينات إضافية.</p><p>على سبيل المثال:</p><div class="prompt-box"><p>حسّن تصميم واجهة التطبيق بحيث تكون أكثر وضوحًا وسهولة في الاستخدام، مع الحفاظ على جميع الوظائف الحالية.</p><p>اجعل عناصر الواجهة مرتبة بشكل أفضل ومتجاوبة مع الجوال، ثم وضّح التعديلات التي أجريتها.</p></div></div></details></div>
+</section>
+<section class="screen" data-i="15" hidden>
+  <div class="hero"><div class="hero-in">
+    <div class="eyebrow">الوحدة 6 · الملخص</div>
+    <h1>المراجع</h1>
+  </div></div>
+  <div class="content"><p class="lead">اعتمدت هذه الدورة على مصادر ومراجع موثوقة حول Vibe Coding. اضغط على أي مرجع لفتحه.</p><ul class="refs"><li><a class="ref" href="https://anthropic.skilljar.com/claude-101" target="_blank" rel="noopener noreferrer"><span class="ref-ico" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3h7v7"/><path d="M10 14 21 3"/><path d="M21 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5"/></svg></span><span class="ref-txt"><span class="ref-t">Claude 101</span><span class="ref-s">Anthropic Academy</span></span></a></li><li><a class="ref" href="https://docs.replit.com/" target="_blank" rel="noopener noreferrer"><span class="ref-ico" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3h7v7"/><path d="M10 14 21 3"/><path d="M21 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5"/></svg></span><span class="ref-txt"><span class="ref-t">وثائق Replit</span><span class="ref-s">Replit</span></span></a></li><li><a class="ref" href="https://www.facebook.com/61568751478861/posts/-top-5-vibe-coding-tools-%D8%A3%D9%82%D9%88%D9%89-%D8%A3%D8%AF%D9%88%D8%A7%D8%AA-%D8%A7%D9%84%D8%B0%D9%83%D8%A7%D8%A1-%D8%A7%D9%84%D8%A7%D8%B5%D8%B7%D9%86%D8%A7%D8%B9%D9%8A-%D9%84%D8%AA%D8%B3%D8%B1%D9%8A%D8%B9-%D8%A7%D9%84%D8%A8%D8%B1%D9%85%D8%AC%D8%A9the_world_of_/122158502564625049/" target="_blank" rel="noopener noreferrer"><span class="ref-ico" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3h7v7"/><path d="M10 14 21 3"/><path d="M21 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5"/></svg></span><span class="ref-txt"><span class="ref-t">Top 5 Vibe Coding Tools — أقوى أدوات الذكاء الاصطناعي</span><span class="ref-s">منشور على Facebook</span></span></a></li></ul></div>
+</section>
+<section class="screen" data-i="16" hidden>
+  <div class="banner"><img src="closing.jpg" alt="ختامًا: الذكاء الاصطناعي يسرّع الكتابة، وفهمك أنت هو الذي يضمن الجودة"></div>
+  <div class="content center">
+    <div class="done-badge" aria-hidden="true"><svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div>
+    <h1 class="done-h">أحسنت، أكملت الدورة</h1>
+    <p class="lead">شكرًا لمشاركتك.</p>
+    <div class="start-row"><button class="btn ghost" type="button" data-go="0">العودة إلى البداية</button></div>
+    <img class="end-logo" src="qu-logo.jpg" alt="جامعة القصيم — عمادة التعلم الإلكتروني وتقنية المعلومات">
+  </div>
+</section></main>
+
+<footer class="foot">
+  <button class="btn ghost" id="prevBtn" type="button">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>السابق</button>
+  <div class="where" id="where"></div>
+  <button class="btn primary" id="nextBtn" type="button">التالي
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></button>
+</footer>
+
+<script>
+(function(){
+  var TOTAL = 16;
+  var screens = Array.prototype.slice.call(document.querySelectorAll('.screen'));
+  var navItems = Array.prototype.slice.call(document.querySelectorAll('.nav-item'));
+  var KEY = 'vibe-coding-course-v1';
+  var state = {i:0, seen:{}, unlocked:{}};
+  try { var s = JSON.parse(localStorage.getItem(KEY) || 'null'); if (s && typeof s.i === 'number') state = s; } catch(e){}
+  state.seen = state.seen || {}; state.unlocked = state.unlocked || {};
+  function save(){ try { localStorage.setItem(KEY, JSON.stringify(state)); } catch(e){} }
+
+  function pauseVideos(){ document.querySelectorAll('video').forEach(function(v){ try{v.pause();}catch(e){} }); }
+
+  function gateBefore(i){ // first locked gate screen strictly before i
+    for (var k = 0; k < i; k++){ var s = screens[k]; if (s && s.dataset.gate && !state.unlocked[k]) return k; }
+    return -1;
+  }
+  function go(i, focus, stay){
+    i = Math.max(0, Math.min(TOTAL, i));
+    var g = gateBefore(i); if (g !== -1) i = g;
+    var changed = !stay;
+    if (changed) pauseVideos();
+    screens.forEach(function(s){ s.hidden = (+s.dataset.i !== i); });
+    state.i = i; state.seen[i] = 1; save();
+    navItems.forEach(function(n){
+      var g = +n.dataset.go;
+      n.classList.toggle('cur', g === i);
+      n.classList.toggle('seen', !!state.seen[g]);
+      var lk = gateBefore(g) !== -1; n.classList.toggle('locked', lk); n.setAttribute('aria-disabled', lk ? 'true' : 'false');
+      if (g === i) n.setAttribute('aria-current','page'); else n.removeAttribute('aria-current');
+    });
+    document.getElementById('prevBtn').disabled = (i === 0);
+    var next = document.getElementById('nextBtn');
+    var gated = !!(screens[i].dataset.gate && !state.unlocked[i]);
+    next.disabled = (i === TOTAL) || gated;
+    next.title = gated ? (screens[i].dataset.gate === 'quiz' ? 'يرجى اجتياز الاختبار للمتابعة' : 'يرجى مشاهدة المقطع كاملًا للمتابعة') : '';
+    next.firstChild.nodeValue = (i === TOTAL - 1) ? 'إنهاء ' : 'التالي ';
+    document.getElementById('counter').textContent = i === 0 ? 'المقدمة' : (i === TOTAL ? 'مكتملة' : (i + ' / ' + (TOTAL - 1)));
+    document.getElementById('bar').style.width = (i / TOTAL * 100) + '%';
+    var cur = screens[i], h = cur.querySelector('h1');
+    document.getElementById('where').textContent = h ? h.textContent : '';
+    if (changed) window.scrollTo(0, 0);
+    if (focus && h) { h.setAttribute('tabindex','-1'); h.focus({preventScroll:true}); }
+  }
+
+  document.addEventListener('click', function(e){
+    var t = e.target.closest('[data-go]');
+    if (t) {
+      if (t.classList.contains('locked')) return;
+      go(+t.dataset.go, true); closeDrawer(); return;
+    }
+    var f = e.target.closest('.flip');
+    if (f) { f.setAttribute('aria-pressed', f.getAttribute('aria-pressed') === 'true' ? 'false' : 'true'); }
+  });
+  document.getElementById('prevBtn').onclick = function(){ go(state.i - 1, true); };
+  document.getElementById('nextBtn').onclick = function(){ go(state.i + 1, true); };
+
+  var drawer = document.getElementById('drawer'), scrim = document.getElementById('scrim'), menuBtn = document.getElementById('menuBtn');
+  function openDrawer(){ drawer.classList.add('on'); scrim.classList.add('on'); menuBtn.setAttribute('aria-expanded','true'); }
+  function closeDrawer(){ drawer.classList.remove('on'); scrim.classList.remove('on'); menuBtn.setAttribute('aria-expanded','false'); }
+  menuBtn.onclick = openDrawer; scrim.onclick = closeDrawer; document.getElementById('closeBtn').onclick = closeDrawer;
+  document.addEventListener('keydown', function(e){ if (e.key === 'Escape') closeDrawer(); });
+
+  // quizzes: unit tests are gated (must pass to continue); single-question checks just give feedback
+  document.querySelectorAll('.quiz').forEach(function(quiz){
+    var sec = quiz.closest('.screen'), idx = +sec.dataset.i;
+    var gated = sec.dataset.gate === 'quiz';
+    var qs = quiz.querySelectorAll('.q'), total = qs.length, PASS = +quiz.dataset.pass || total;
+    var check = quiz.querySelector('.q-check'), reset = quiz.querySelector('.q-reset'), res = quiz.querySelector('.quiz-result');
+    var note = null;
+    function paint(){
+      if (!note) return;
+      var ok = !!state.unlocked[idx];
+      note.className = 'gate-note' + (ok ? ' ok' : '');
+      note.textContent = ok ? '✓ تم اجتياز الاختبار، ويمكنك الآن الانتقال إلى الصفحة التالية.' : 'يرجى اجتياز الاختبار للانتقال إلى الصفحة التالية، ودرجة الاجتياز ' + PASS + ' من ' + total + '.';
+    }
+    if (gated) { note = document.createElement('div'); note.setAttribute('role','status'); quiz.before(note); paint(); }
+    check.onclick = function(){
+      var score = 0, missing = 0;
+      qs.forEach(function(q){ if (!q.querySelector('input:checked')) missing++; });
+      if (missing) {
+        res.textContent = total === 1 ? 'يرجى اختيار إجابة أولًا.' : 'يرجى الإجابة عن جميع الأسئلة، وعدد الأسئلة المتبقية: ' + missing + '.';
+        res.style.color = 'var(--bad)'; return;
+      }
+      qs.forEach(function(q){
+        var c = +q.dataset.correct;
+        q.querySelectorAll('.opt').forEach(function(o, k){
+          var inp = o.querySelector('input'); inp.disabled = true;
+          if (k === c) o.classList.add('is-ok');
+          else if (inp.checked) o.classList.add('is-bad');
+        });
+        if (+q.querySelector('input:checked').value === c) score++;
+      });
+      if (!gated) {
+        var right = score === total;
+        res.textContent = right ? 'إجابة صحيحة، أحسنت.' : 'إجابة غير صحيحة، والإجابة الصحيحة موضّحة باللون الأخضر.';
+        res.style.color = right ? 'var(--ok)' : 'var(--bad)';
+      } else {
+        var passed = score >= PASS;
+        res.textContent = 'نتيجتك: ' + score + ' من ' + total + (passed ? ' — اجتزت الاختبار بنجاح.' : ' — لم تجتز الاختبار، يرجى إعادة المحاولة. درجة الاجتياز ' + PASS + ' من ' + total + '.');
+        res.style.color = passed ? 'var(--ok)' : 'var(--bad)';
+        if (passed) { state.unlocked[idx] = 1; save(); paint(); go(state.i, false, true); }
+      }
+      check.hidden = true; reset.hidden = false;
+    };
+    reset.onclick = function(){
+      quiz.querySelectorAll('.opt').forEach(function(o){ o.classList.remove('is-ok','is-bad'); var i = o.querySelector('input'); i.disabled = false; i.checked = false; });
+      res.textContent = ''; res.style.color = ''; check.hidden = false; reset.hidden = true;
+    };
+  });
+
+  // video gate: learner must watch the whole clip before moving on
+  screens.forEach(function(sec, idx){
+    if (sec.dataset.gate !== 'video') return;
+    var v = sec.querySelector('video'); if (!v) return;
+    var note = document.createElement('div'); note.className = 'gate-note'; note.setAttribute('role','status');
+    v.closest('.video-wrap').before(note);
+    function paint(){
+      var ok = !!state.unlocked[idx];
+      note.className = 'gate-note' + (ok ? ' ok' : '');
+      note.textContent = ok ? '✓ تمت مشاهدة المقطع، ويمكنك الآن الانتقال إلى الدرس التالي.' : 'يرجى مشاهدة المقطع كاملًا للانتقال إلى الدرس التالي.';
+    }
+    paint();
+    var maxT = 0;
+    v.addEventListener('timeupdate', function(){ if (!v.seeking && v.currentTime > maxT) maxT = v.currentTime; });
+    v.addEventListener('seeking', function(){ if (!state.unlocked[idx] && v.currentTime > maxT + 1) v.currentTime = maxT; });
+    v.addEventListener('ended', function(){ state.unlocked[idx] = 1; save(); paint(); go(state.i, false, true); });
+  });
+
+  go(state.i || 0, false);
+})();
+
+</script>
+</body>
+</html>
